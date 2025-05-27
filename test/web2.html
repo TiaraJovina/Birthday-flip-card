@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Happy Birthday!</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
+  body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: 'Montserrat', sans-serif;
+    overflow: hidden;
+    background: linear-gradient(135deg, #6a11cb, #2575fc);
+    color: white;
+  }
+  /* Cover Card */
+  #cover {
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 10, 10, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    z-index: 1000;
+    cursor: pointer;
+    transition: opacity 1s ease;
+  }
+  #cover h1 {
+    font-size: 3rem;
+    margin: 0 0 20px 0;
+    font-weight: 700;
+  }
+  #cover p {
+    font-size: 1.25rem;
+    opacity: 0.8;
+  }
+
+  /* Main container */
+  .container {
+    position: relative;
+    background: rgba(0,0,0,0.3);
+    padding: 40px 60px;
+    border-radius: 20px;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    max-width: 500px;
+    margin: 100px auto;
+    text-align: center;
+    opacity: 0;
+    transition: opacity 1.5s ease;
+  }
+  .container.show {
+    opacity: 1;
+  }
+  h1 {
+    font-size: 3rem;
+    margin-bottom: 20px;
+    font-weight: 700;
+  }
+  p {
+    font-size: 1.25rem;
+    line-height: 1.6;
+    margin-bottom: 30px;
+  }
+  .signature {
+    font-style: italic;
+    font-size: 1rem;
+    opacity: 0.7;
+  }
+
+  /* Balloons */
+  .balloons {
+    position: fixed;
+    bottom: -150px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    width: 80%;
+    max-width: 800px;
+    pointer-events: none;
+  }
+  .balloon {
+    width: 50px;
+    height: 75px;
+    background: red;
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+    position: relative;
+    animation: float 5s ease-in-out infinite;
+    opacity: 0.85;
+  }
+  .balloon:nth-child(2) { background: #ff6f91; animation-delay: 1s; }
+  .balloon:nth-child(3) { background: #ff9671; animation-delay: 2s; }
+  .balloon:nth-child(4) { background: #ffc75f; animation-delay: 0.7s; }
+  .balloon:nth-child(5) { background: #d65db1; animation-delay: 1.5s; }
+  .balloon:nth-child(6) { background: #0081cf; animation-delay: 2.3s; }
+  .balloon:nth-child(7) { background: #845ec2; animation-delay: 3s; }
+  .balloon:nth-child(8) { background: #00c2cb; animation-delay: 1.8s; }
+  .balloon:nth-child(9) { background: #ff8066; animation-delay: 2.8s; }
+
+  .balloon::after {
+    content: '';
+    position: absolute;
+    bottom: -18px;
+    left: 50%;
+    width: 2px;
+    height: 18px;
+    background: #555;
+    transform: translateX(-50%);
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-40px); }
+  }
+
+  /* Sprinkle confetti */
+  #confetti {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none;
+    overflow: visible;
+    z-index: 900;
+  }
+  .confetti-piece {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background-color: white;
+    opacity: 0.9;
+    border-radius: 2px;
+    animation: fall 4s linear forwards;
+  }
+  @keyframes fall {
+    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div id="cover">
+  <h1>Click to Open Your Birthday Surprise!</h1>
+  <p>Tap anywhere to reveal your special message 🎉🎈</p>
+</div>
+
+<div class="container" id="mainContent">
+  <h1>Happy Birthday, Dear Friend!</h1>
+  <p>
+    Wishing you a day filled with love, laughter, and unforgettable moments. 
+    May this new year of your life bring you endless happiness and success. 
+    Keep shining bright and chasing your dreams!
+  </p>
+  <p class="signature">— From Your Bestie</p>
+</div>
+
+<div class="balloons" id="balloons">
+  <div class="balloon"></div>
+  <div class="balloon"></div>
+  <div class="balloon"></div>
+  <div class="balloon"></div>
+  <div class="balloon"></div>
+  <div class="balloon"></div>
+  <div class="balloon"></div>
+  <div class="balloon"></div>
+  <div class="balloon"></div>
+</div>
+
+<div id="confetti"></div>
+
+<script>
+  const cover = document.getElementById('cover');
+  const mainContent = document.getElementById('mainContent');
+  const balloons = document.getElementById('balloons');
+  const confettiContainer = document.getElementById('confetti');
+
+  // Hide main content and balloons initially
+  mainContent.style.opacity = 0;
+  balloons.style.opacity = 0;
+
+  function createConfettiPiece() {
+    const confetti = document.createElement('div');
+    confetti.classList.add('confetti-piece');
+    confetti.style.backgroundColor = randomColor();
+    confetti.style.left = Math.random() * window.innerWidth + 'px';
+    confetti.style.top = '-10px';
+    confetti.style.animationDuration = (2 + Math.random() * 3) + 's';
+    confetti.style.opacity = Math.random();
+    confetti.style.width = confetti.style.height = (5 + Math.random() * 5) + 'px';
+    confetti.style.borderRadius = Math.random() > 0.5 ? '0%' : '50%';
+    confettiContainer.appendChild(confetti);
+
+    // Remove confetti after animation
+    confetti.addEventListener('animationend', () => {
+      confetti.remove();
+    });
+  }
+
+  function randomColor() {
+    const colors = ['#ff6f91', '#ff9671', '#ffc75f', '#d65db1', '#0081cf', '#845ec2', '#00c2cb', '#ff8066', 'white'];
+    return colors[Math.floor(Math.random() * colors.length)];
+  }
+
+  function startConfetti() {
+    // Generate confetti every 150ms for 5 seconds
+    const interval = setInterval(createConfettiPiece, 150);
+    setTimeout(() => clearInterval(interval), 5000);
+  }
+
+  cover.addEventListener('click', () => {
+    // Fade out cover
+    cover.style.opacity = '0';
+    setTimeout(() => {
+      cover.style.display = 'none';
+      // Show main content and balloons
+      mainContent.classList.add('show');
+      balloons.style.opacity = '1';
+      startConfetti();
+    }, 1000);
+  });
+</script>
+
+</body>
+</html>
