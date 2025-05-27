@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Birthday Surprise</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Pacifico&family=Montserrat:wght@400;700&display=swap');
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body, html {
+      height: 100%;
+      font-family: 'Pacifico', cursive;
+      background: linear-gradient(135deg, #74ebd5, #acb6e5);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .flip-card {
+      background-color: transparent;
+      width: 320px;
+      height: 440px;
+      perspective: 1000px;
+      cursor: pointer;
+    }
+
+    .flip-card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      text-align: center;
+      transition: transform 0.8s ease-in-out;
+      transform-style: preserve-3d;
+    }
+
+    .flip-card.flipped .flip-card-inner {
+      transform: rotateY(180deg);
+    }
+
+    .flip-card-front, .flip-card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      border-radius: 20px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+      padding: 30px;
+    }
+
+    .flip-card-front {
+      background: #56CCF2;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .flip-card-front h1 {
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+
+    .flip-card-front p {
+      font-size: 1.1rem;
+      opacity: 0.9;
+    }
+
+    .flip-card-back {
+      background: rgba(0,0,50,0.9);
+      transform: rotateY(180deg);
+      overflow: hidden;
+    }
+
+    .slides {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .slide {
+      display: none;
+      flex-grow: 1;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      font-size: 1.2rem;
+      animation: fadeIn 0.6s ease;
+    }
+
+    @keyframes fadeIn {
+      0% { opacity: 0; transform: translateY(20px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    .slide.active {
+      display: flex;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+    }
+
+    button {
+      background: #ffb347;
+      border: none;
+      padding: 10px 20px;
+      color: #fff;
+      font-weight: bold;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: background 0.3s ease, transform 0.2s ease;
+      font-family: 'Montserrat', sans-serif;
+    }
+
+    button:hover {
+      background: #ff9843;
+      transform: scale(1.1);
+    }
+
+    .confetti {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background-color: yellow;
+      animation: fall 3s linear infinite;
+      border-radius: 50%;
+    }
+
+    @keyframes fall {
+      0% { transform: translateY(-100px) rotate(0); opacity: 1; }
+      100% { transform: translateY(500px) rotate(360deg); opacity: 0; }
+    }
+
+    .name-input {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+    }
+
+    .name-input input {
+      padding: 10px;
+      border-radius: 20px;
+      border: none;
+      outline: none;
+      font-size: 1rem;
+      font-family: 'Montserrat', sans-serif;
+    }
+  </style>
+</head>
+<body>
+  <audio id="bgMusic" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_96f5d4b7d1.mp3?filename=birthday-party-112903.mp3"></audio>
+  <audio id="sfx" src="https://cdn.pixabay.com/download/audio/2023/05/16/audio_4ba61887aa.mp3?filename=page-flip-146585.mp3"></audio>
+
+  <div class="name-input">
+    <input type="text" id="recipientName" placeholder="Enter recipient's name...">
+  </div>
+
+  <div class="flip-card" id="flipCard">
+    <div class="flip-card-inner">
+      <div class="flip-card-front">
+        <h1>Tap to Reveal</h1>
+        <p>Open your special birthday message 🎉</p>
+      </div>
+      <div class="flip-card-back">
+        <div class="slides" id="slides">
+          <div class="slide active">
+            <p id="greetingText">Wishing you a day filled with love, laughter, and happiness!</p>
+          </div>
+          <div class="slide">
+            <p>Every year is a new chapter. May yours be the most amazing yet!</p>
+          </div>
+          <div class="slide">
+            <p>You are loved, cherished, and celebrated. Happy Birthday!</p>
+          </div>
+          <div class="controls">
+            <button id="prevBtn">Back to Start</button>
+            <button id="nextBtn">Next</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const flipCard = document.getElementById('flipCard');
+    const slides = document.querySelectorAll('.slide');
+    const nextBtn = document.getElementById('nextBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const bgMusic = document.getElementById('bgMusic');
+    const sfx = document.getElementById('sfx');
+    const greetingText = document.getElementById('greetingText');
+    const nameInput = document.getElementById('recipientName');
+    let currentSlide = 0;
+    let musicPlayed = false;
+
+    function createConfetti() {
+      for (let i = 0; i < 50; i++) {
+        const confetti = document.createElement('div');
+        confetti.classList.add('confetti');
+        confetti.style.left = Math.random() * 100 + 'vw';
+        confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 70%)`;
+        confetti.style.animationDuration = (Math.random() * 3 + 2) + 's';
+        document.body.appendChild(confetti);
+        setTimeout(() => confetti.remove(), 5000);
+      }
+    }
+
+    flipCard.addEventListener('click', (e) => {
+      if (!flipCard.classList.contains('flipped') && !e.target.closest('button') && nameInput.value.trim() !== '') {
+        flipCard.classList.add('flipped');
+        greetingText.textContent = `Dear ${nameInput.value.trim()}, wishing you a day filled with love, laughter, and happiness!`;
+        if (!musicPlayed) {
+          bgMusic.play();
+          musicPlayed = true;
+        }
+        createConfetti();
+      }
+    });
+
+    nextBtn.addEventListener('click', () => {
+      slides[currentSlide].classList.remove('active');
+      currentSlide = (currentSlide + 1) % slides.length;
+      slides[currentSlide].classList.add('active');
+      sfx.play();
+    });
+
+    prevBtn.addEventListener('click', () => {
+      flipCard.classList.remove('flipped');
+      slides[currentSlide].classList.remove('active');
+      currentSlide = 0;
+      slides[currentSlide].classList.add('active');
+    });
+  </script>
+</body>
+</html>
